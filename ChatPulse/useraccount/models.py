@@ -12,19 +12,19 @@ class CutomUserManager(UserManager):
         email = self.normalize_email(email)
         user = self.model(email=email, name=name, **extra_fields)
         user.set_password(password)
-        user.save(using=self.db)
+        user.save(using=self._db)
 
         return user
 
     def create_user(self, name=None ,email=None, password=None, **extra_fields):
-        extra_fields.setdefault('is_superuser', False)
         extra_fields.setdefault('is_staff', False)
-        return self._create_user(email, name ,password, **extra_fields)
+        extra_fields.setdefault('is_superuser', False)
+        return self._create_user(name, email ,password, **extra_fields)
     
     def create_superuser(self, name=None ,email=None, password=None, **extra_fields):
-        extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_staff', True)
-        return self._create_user(email, name ,password, **extra_fields)
+        extra_fields.setdefault('is_superuser', True)
+        return self._create_user(name, email ,password, **extra_fields)
 
 class User(AbstractBaseUser, PermissionsMixin):
     AGENT = 'agent'
@@ -36,10 +36,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=50, null=True)
-    email = models.CharField(max_length=50, null=True, unique=True)
-    password = models.CharField(max_length=50, null=True)
-    username = models.CharField(max_length=50, null=True, unique=True)
+    email = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=50, blank=True, default='')
     role = models.CharField(max_length=50, choices=ROLE_CHOICES, default=AGENT)
 
     is_active = models.BooleanField(default=True)
@@ -54,6 +52,3 @@ class User(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
     EMAIL_FIELD = 'email'
     REQUIRED_FIELDS = ['name']
-
-    def __str__(self):
-        return self.username
